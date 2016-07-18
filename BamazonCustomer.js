@@ -1,5 +1,7 @@
 var mysql = require('mysql');
 var inquirer = require('inquirer');
+var accounting = require('accounting');
+var chalk = require('chalk');
 
 var connection = mysql.createConnection({
   host: "localhost",
@@ -7,112 +9,97 @@ var connection = mysql.createConnection({
   user: "root", //Your username
   password: "", //Your password
   database: "bamazon"
-})
+});
 
 connection.connect(function(err) {
   if (err) throw err;
-  console.log("connected as id " + connection.threadId);
-  //start();
-})
+  start();
+});
+
+var max;
 
 var start = function() {
-  inquirer.prompt({
-    name: "postOrBid",
-    type: "rawlist",
-    message: "Would you like to [POST] an auction or [BID] on an auction?",
-    choices: ["POST", "BID"]
-  }).then(function(answer) {
-    if (answer.postOrBid.toUpperCase() == "POST") {
-      postAuction();
+  // Select all rows of columns desired and print
+  var col = ['Item ID', 'Product Name', 'Price'];
+  selectColumns(col);
+};
+
+var selectColumns = function(col) {
+  var query = 'SELECT ';
+  for (var i = 0; i < col.length; i++) {
+    query += col[i].split(' ').join('') + ' AS "' + col[i] + '"';
+    if (i !== col.length-1) {
+      query += ', ';
     } else {
-      bidAuction();
+      query += ' ';
     }
-  })
+  }
+  query += 'FROM Products';
+  connection.query(query, function(err, res) {
+    handleQuery(res,col);
+  });
+};
+
+var handleQuery = function(res,col) {
+  console.log(chalk.bold.blue('\nCurrent Items on Sale\n'));
+  printData(res,col);
+  max = res[res.length - 1]['Item ID'];
+  chooseItem(max);
 }
 
-var postAuction = function() {
+var chooseItem = function(max) {
   inquirer.prompt([{
-    name: "item",
+    name: "id",
     type: "input",
-    message: "What is the item you would like to submit?"
-  }, {
-    name: "category",
-    type: "input",
-    message: "What category would you like to place your auction in?"
-  }, {
-    name: "startingBid",
-    type: "input",
-    message: "What would you like your starting bid to be?",
+    message: "What is the item ID of the product you would like to buy?",
     validate: function(value) {
-      if (isNaN(value) == false) {
+      if (value >= 0 && value <= max && value%1 === 0 && value.indexOf(' ') < 0 && value.indexOf('.') < 0) {
         return true;
       } else {
-        return false;
+        return 'Please type a whole number between 1 and ' + max + ' without a period or extra spaces';
+      }
+    }
+  } , {
+    name: "quantity",
+    type: "input",
+    message: "How many would you like to buy?",
+    validate: function(value) {
+      if (value > 0 && value%1 === 0 && value.indexOf(' ') < 0 && value.indexOf('.') < 0) {
+        return true;
+      } else {
+        return 'Please type a whole number greater than 0 without a period or extra spaces';
       }
     }
   }]).then(function(answer) {
-    connection.query("INSERT INTO auctions SET ?", {
-      itemname: answer.item,
-      category: answer.category,
-      startingbid: answer.startingBid,
-      highestbid: answer.startingBid
-    }, function(err, res) {
-      console.log("Your auction was created successfully!");
-      start();
-    });
+    checkQuantity(answer);
   })
+};
+
+var checkQuantity = function(answer) {
+  connection.query('SELECT StockQuantity, Price FROM Products WHERE ItemID = ?', answer.id, function(err, res) {
+    if (res[0].StockQuantity < answer.quantity) {
+      console.log(chalk.bold.red('Insufficient quantity.  Please select a quantity equal to or below ' + res[0].StockQuantity) + '.');
+      chooseItem(max);
+    } else {
+      var total = answer.quantity * res[0].Price;
+      var newQuantity = res[0].StockQuantity-answer.quantity;
+      updateQuantity(answer.id,total,newQuantity);
+    }
+  });
+};
+
+var updateQuantity = function(id,total,newQuantity) {
+  connection.query('UPDATE Products SET StockQuantity = ? WHERE ItemID = ?', [newQuantity,id], function(err, results) {
+    console.log(chalk.bold.blue('Total cost: ') + chalk.bold.yellow(accounting.formatMoney(total)));
+    console.log(chalk.bold.blue('Thank you come again!')); 
+  });
 }
 
-var bidAuction = function() {
-  connection.query('SELECT * FROM Products', function(err, res) {
-    printData(res);
-    /*inquirer.prompt({
-      name: "choice",
-      type: "rawlist",
-      choices: function(value) {
-        var choiceArray = [];
-        for (var i = 0; i < res.length; i++) {
-          choiceArray.push(res[i].itemname);
-        }
-        return choiceArray;
-      },
-      message: "What auction would you like to place a bid in?"
-    }).then(function(answer) {
-      for (var i = 0; i < res.length; i++) {
-        if (res[i].itemname == answer.choice) {
-          var chosenItem = res[i];
-          inquirer.prompt({
-            name: "bid",
-            type: "input",
-            message: "How much would you like to bid?"
-          }).then(function(answer) {
-            if (chosenItem.highestbid < parseInt(answer.bid)) {
-              connection.query("UPDATE auctions SET ? WHERE ?", [{
-                highestbid: answer.bid
-              }, {
-                id: chosenItem.id
-              }], function(err, res) {
-                console.log("Bid placed successfully!");
-                start();
-              });
-            } else {
-              console.log("Your bid was too low. Try again...");
-              start();
-            }
-          })
-        }
-      }
-    })*/
-  })
-}
-
-var printData = function(res) {
-  var colHeader = ['Item ID','Product Name','Department Name','Price','Stock Quantity'];
-  var col = ['ItemID','ProductName','DepartmentName','Price','StockQuantity'];
+var printData = function(res, col) {
   // Get length of column header
   var colLengths = [];
-  for (var h = 0; h < colHeader.length; h++) {
-    colLengths.push(colHeader[h].split('').length);
+  for (var h = 0; h < col.length; h++) {
+    colLengths.push(col[h].split('').length);
   }
   // Loop through each row
   for (var i = 0; i < res.length; i++) {
@@ -121,6 +108,8 @@ var printData = function(res) {
       var length;
       // Check to see if datatype is number, if so turn to string
       if (typeof res[i][col[j]] === 'number') {
+        // If price, add $
+        if (col[j] === 'Price') res[i][col[j]] = '$'.concat(res[i][col[j]]);
         length = res[i][col[j]].toString().split('').length;
       } else {
         length = res[i][col[j]].split('').length;
@@ -135,7 +124,7 @@ var printData = function(res) {
     var divider = '+';
     var row = '| ';
     // Loop through each column
-    for (var l = 0; l < colHeader.length; l++) {
+    for (var l = 0; l < col.length; l++) {
       var spacerHeader = '';
       var spacer = '';
       for (var m = 0; m < colLengths[l]; m++) {
@@ -151,24 +140,24 @@ var printData = function(res) {
           length = res[k][col[l]].split('').length;
         }
         // Fill in spaces
-        if (m >= colHeader[l].split('').length && k === 0) spacerHeader += ' ';
+        if (m >= col[l].split('').length && k === 0) spacerHeader += ' ';
         if (m >= length) spacer += ' ';
         // Add ending corner
-        if (m === colLengths[l]-1) divider += '-+';
+        if (m === colLengths[l] - 1) divider += '-+';
       }
       if (k === 0) {
         // Add header
-        header += colHeader[l];
+        header += chalk.bold.cyan(col[l]);
         // Add header spacing, end and beginning of new one
         header += spacerHeader + ' | ';
       }
       // Add row
-      row += res[k][col[l]];
+      row += chalk.yellow(res[k][col[l]]);
       // Add row spacing, end and beginning of new one
       row += spacer + ' | ';
     }
     // Add header
-    if (k===0) {
+    if (k === 0) {
       console.log(divider);
       console.log(header);
       console.log(divider);
@@ -177,7 +166,5 @@ var printData = function(res) {
     console.log(row);
     console.log(divider);
   }
-}
-
-bidAuction();
-//start();
+  console.log('');
+};
