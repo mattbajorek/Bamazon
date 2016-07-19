@@ -89,5 +89,14 @@ var printData = function(res, col) {
   console.log('');
 };
 
+var validate = function(value) {
+  if (value >= 0 && value%1 === 0 && value.indexOf(' ') < 0 && value.indexOf('.') < 0) {
+    return true;
+  } else {
+    return 'Please type a whole number greater than 0 without a period or extra spaces';
+  }
+}
+
 exports.createQuery = createQuery;
 exports.printData = printData;
+exports.validate = validate;

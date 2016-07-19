@@ -49,16 +49,10 @@ var chooseItem = function(max) {
     name: "quantity",
     type: "input",
     message: "How many would you like to buy?",
-    validate: function(value) {
-      if (value > 0 && value%1 === 0 && value.indexOf(' ') < 0 && value.indexOf('.') < 0) {
-        return true;
-      } else {
-        return 'Please type a whole number greater than 0 without a period or extra spaces';
-      }
-    }
+    validate: Bamazon.validate
   }]).then(function(answer) {
     checkQuantity(answer);
-  })
+  });
 };
 
 var checkQuantity = function(answer) {
@@ -77,6 +71,7 @@ var checkQuantity = function(answer) {
 var updateQuantity = function(id,total,newQuantity) {
   connection.query('UPDATE Products SET StockQuantity = ? WHERE ItemID = ?', [newQuantity,id], function(err, results) {
     console.log(chalk.bold.blue('Total cost: ') + chalk.bold.yellow(accounting.formatMoney(total)));
-    console.log(chalk.bold.blue('Thank you come again!')); 
+    console.log(chalk.bold.blue('Thank you come again!'));
+    start();
   });
 };
