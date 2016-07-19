@@ -45,7 +45,7 @@ var handleQuery = function(res,col) {
   printData(res,col);
   max = res[res.length - 1]['Item ID'];
   chooseItem(max);
-}
+};
 
 var chooseItem = function(max) {
   inquirer.prompt([{
@@ -93,7 +93,7 @@ var updateQuantity = function(id,total,newQuantity) {
     console.log(chalk.bold.blue('Total cost: ') + chalk.bold.yellow(accounting.formatMoney(total)));
     console.log(chalk.bold.blue('Thank you come again!')); 
   });
-}
+};
 
 var printData = function(res, col) {
   // Get length of column header
