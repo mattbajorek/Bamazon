@@ -17,30 +17,8 @@ connection.connect(function(err) {
   start();
 });
 
-var col = ['Item ID', 'Product Name', 'Price'];
-
-var handleQuery = function(res) {
-  Bamazon.printData(res,col);
-};
-
-var viewProducts = function() {
-	Bamazon.selectColumns(col,handleQuery);
-};
-
-var viewLowInvent = function() {
-
-};
-
-var addInvent = function() {
-
-};
-
-var addProducts = function() {
-
-};
-
+// Allow user to choose from menu options
 var start = function() {
-  // Allow user to choose from menu options
   console.log('');
   var menu = [
 	  {
@@ -63,4 +41,40 @@ var start = function() {
 	  	case '4) Add New Product': addProducts(); break;
 	  }
 	});
+};
+
+// Select columns you want to show
+var col = ['Item ID', 'Product Name', 'Price', 'StockQuantity'];
+
+// Query
+var sendQuery = function(query) {
+	connection.query(query, function(err, res) {
+    Bamazon.printData(res,col);
+    // Reshow menu
+		start();
+  });
+}
+
+// Function for handling view products option
+var viewProducts = function() {
+	// Query for selecting all rows of certain columns
+	var query = Bamazon.createQuery(col);
+	sendQuery(query);
+};
+
+// Function for handling view low inventory option
+var viewLowInvent = function() {
+	var query = Bamazon.createQuery(col);
+	query += ' WHERE StockQuantity < 5';
+	sendQuery(query);
+};
+
+// Function for handling view add inventory option
+var addInvent = function() {
+
+};
+
+// Function for handling add products option
+var addProducts = function() {
+
 };

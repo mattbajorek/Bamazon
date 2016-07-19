@@ -1,15 +1,6 @@
-var mysql = require('mysql');
 var chalk = require('chalk');
 
-var connection = mysql.createConnection({
-  host: "localhost",
-  port: 3306,
-  user: "root", //Your username
-  password: "", //Your password
-  database: "bamazon"
-});
-
-var selectColumns = function(col, callback) {
+var createQuery = function(col) {
   var query = 'SELECT ';
   for (var i = 0; i < col.length; i++) {
     query += col[i].split(' ').join('') + ' AS "' + col[i] + '"';
@@ -20,9 +11,7 @@ var selectColumns = function(col, callback) {
     }
   }
   query += 'FROM Products';
-  connection.query(query, function(err, res) {
-    callback(res);
-  });
+  return query;
 };
 
 var printData = function(res, col) {
@@ -100,5 +89,5 @@ var printData = function(res, col) {
   console.log('');
 };
 
-exports.selectColumns = selectColumns;
+exports.createQuery = createQuery;
 exports.printData = printData;
