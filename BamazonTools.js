@@ -1,4 +1,5 @@
 var chalk = require('chalk');
+var accounting = require('accounting');
 
 var createQuery = function(col) {
   var query = 'SELECT ';
@@ -28,7 +29,7 @@ var printData = function(res, col) {
       // Check to see if datatype is number, if so turn to string
       if (typeof res[i][col[j]] === 'number') {
         // If price, add $
-        if (col[j] === 'Price') res[i][col[j]] = '$'.concat(res[i][col[j]]);
+        if (col[j] === 'Price') res[i][col[j]] = accounting.formatMoney(res[i][col[j]]);
         length = res[i][col[j]].toString().split('').length;
       } else {
         length = res[i][col[j]].split('').length;

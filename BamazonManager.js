@@ -76,20 +76,23 @@ var viewLowInvent = function() {
 // Function for handling view add inventory option
 var addInvent = function() {
 	var inputQuantity;
-	var searchID = function(answer) {
+	// Callback for after inquirer questions are asked
+	var searchID = function(answers) {
   	var query = Bamazon.createQuery(col);
 		query += ' WHERE ItemID = ?';
-		inputQuantity = Number(answer.quantity);
-		sendQuery(query,updateQuantity,answer.id);
+		inputQuantity = Number(answers.quantity);
+		sendQuery(query,updateQuantity,answers.id);
   };
+  // Calback after query of id is done
 	var updateQuantity = function(res) {
 		var quantity = res[0]['Stock Quantity'] + inputQuantity;
 		var query = 'UPDATE Products SET StockQuantity = ? WHERE ItemID = ?';
 		var params = [quantity,res[0]['Item ID']];
 		sendQuery(query,confirmed,params);
 	};
+	// Callback once stock quantity is updated
 	var confirmed = function(res) {
-		console.log(chalk.bold.blue('\nCompleted adding additional items!'));
+		console.log(chalk.bold.blue('\nCompleted adding stock to item!'));
 		// Reshow menu
 		start();
 	}
@@ -97,7 +100,7 @@ var addInvent = function() {
 	inquirer.prompt([{
     name: "id",
     type: "input",
-    message: "What is the item ID of the product you would like to add?",
+    message: "What is the item ID of the product you would like to add stock?",
     validate: Bamazon.validate
   } , {
     name: "quantity",
@@ -109,5 +112,46 @@ var addInvent = function() {
 
 // Function for handling add products option
 var addProducts = function() {
-	
+	var format;
+	// Callback once answers are entered
+	var insertQuery = function(answers) {
+		var query = 'INSERT INTO Products (ProductName,DepartmentName,Price,StockQuantity) VALUES (?,?,?,?)';
+		var params = [answers.name, answers.deptname, format, Number(answers.quantity)];
+		sendQuery(query,confirmed,params);
+	}
+	// Callback once stock quantity is updated
+	var confirmed = function(res) {
+		console.log(format);
+		console.log(res);
+		console.log(chalk.bold.blue('\nCompleted adding additional item!'));
+		// Reshow menu
+		start();
+	}
+	// Questions that call the functions listed above
+	inquirer.prompt([{
+    name: "name",
+    type: "input",
+    message: "What is the name of the product you would like to add?"
+  } , {
+    name: "deptname",
+    type: "input",
+    message: "What is the department name of the product?"
+  } , {
+    name: "price",
+    type: "input",
+    message: "What is the price of the product?",
+    validate: function(value) {
+    	format = accounting.formatMoney(value, "", 2, "",".")
+		  if (format !== '0.00' && Number(format) <= 99999999.99) {
+		    return true;
+		  } else {
+		    return 'Please type a number greater than 0 and less than or equal to 99999999.99';
+		  }
+		}
+  } , {
+    name: "quantity",
+    type: "input",
+    message: "What is the stock quantity of the product?",
+    validate: Bamazon.validate
+  }]).then(insertQuery);
 };
