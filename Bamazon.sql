@@ -26,7 +26,7 @@ VALUES
 CREATE TABLE Departments (
 	DepartmentID INT(10) UNSIGNED AUTO_INCREMENT NOT NULL,
     DepartmentName VARCHAR(255) NOT NULL,
-    OverheadCosts DECIMAL(10,2) DEFAULT 0.00,
+    OverheadCosts DECIMAL(10,2) DEFAULT 0.00 NOT NULL,
     ProductSales DECIMAL(10,2) DEFAULT 0.00,
     PRIMARY KEY(DepartmentID)
 );
