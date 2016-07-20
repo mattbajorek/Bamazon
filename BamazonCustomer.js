@@ -86,7 +86,6 @@ var queryTotal = function(deptName,total) {
   connection.query(query, params, function(err, res) {
     updateTotal(res,deptName,total);
   });
-  
 };
 
 var updateTotal = function(res,deptName,total) {
