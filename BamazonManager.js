@@ -138,14 +138,7 @@ var addProducts = function() {
     name: "price",
     type: "input",
     message: "What is the price of the product?",
-    validate: function(value) {
-    	format = accounting.formatMoney(value, "", 2, "",".")
-		  if (format !== '0.00' && Number(format) <= 99999999.99) {
-		    return true;
-		  } else {
-		    return 'Please type a number greater than 0 and less than or equal to 99999999.99';
-		  }
-		}
+    validate: Bamazon.validateMoney
   } , {
     name: "quantity",
     type: "input",

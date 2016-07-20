@@ -90,7 +90,7 @@ var printData = function(res, col) {
   console.log('');
 };
 
-var validate = function(value) {
+var validateQuantity = function(value) {
   if (value>=0 && value<=65535 && value%1===0 && value.indexOf(' ')<0 && value.indexOf('.')<0) {
     return true;
   } else {
@@ -98,6 +98,16 @@ var validate = function(value) {
   }
 }
 
+var validateMoney = function(value) {
+  format = accounting.formatMoney(value, "", 2, "",".")
+  if (format !== '0.00' && Number(format) <= 99999999.99) {
+    return true;
+  } else {
+    return 'Please type a number greater than 0 and less than or equal to 99999999.99';
+  }
+}
+
 exports.createQuery = createQuery;
 exports.printData = printData;
-exports.validate = validate;
+exports.validateQuantity = validateQuantity;
+exports.validateMoney = validateMoney;

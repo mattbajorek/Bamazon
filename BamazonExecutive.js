@@ -92,13 +92,6 @@ var createDept = function() {
     name: "overhead",
     type: "input",
     message: "What is the overhead costs of the department?",
-    validate: function(value) {
-    	format = accounting.formatMoney(value, "", 2, "",".")
-		  if (format !== '0.00' && Number(format) <= 99999999.99) {
-		    return true;
-		  } else {
-		    return 'Please type a number greater than 0 and less than or equal to 99999999.99';
-		  }
-		}
+    validate: Bamazon.validateMoney
   }]).then(insertQuery);
 };
