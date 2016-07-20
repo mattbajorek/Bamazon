@@ -112,11 +112,11 @@ var addInvent = function() {
 
 // Function for handling add products option
 var addProducts = function() {
-	var format;
 	// Callback once answers are entered
 	var insertQuery = function(answers) {
 		var query = 'INSERT INTO Products (ProductName,DepartmentName,Price,StockQuantity) VALUES (?,?,?,?)';
-		var params = [answers.name, answers.deptname, format, Number(answers.quantity)];
+		var formatPrice = accounting.formatMoney(answers.price, "", 2, "",".");
+		var params = [answers.name, answers.deptname, formatPrice, Number(answers.quantity)];
 		sendQuery(query,confirmed,params);
 	}
 	// Callback once stock quantity is updated
@@ -143,6 +143,6 @@ var addProducts = function() {
     name: "quantity",
     type: "input",
     message: "What is the stock quantity of the product?",
-    validate: Bamazon.validate
+    validate: Bamazon.validateQuantity
   }]).then(insertQuery);
 };

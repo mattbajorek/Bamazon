@@ -70,11 +70,11 @@ var viewProducts = function() {
 
 // Function for handling new department creation
 var createDept = function() {
-	var format;
 	// Callback once answers are entered
 	var insertQuery = function(answers) {
 		var query = 'INSERT INTO Departments (DepartmentName,OverHeadCosts) VALUES (?,?)';
-		var params = [answers.deptname, format];
+		var formatPrice = accounting.formatMoney(answers.overhead, "", 2, "",".");
+		var params = [answers.deptname, formatPrice];
 		sendQuery(query,confirmed,params);
 	}
 	// Callback once stock quantity is updated
