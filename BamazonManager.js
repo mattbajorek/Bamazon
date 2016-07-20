@@ -121,8 +121,6 @@ var addProducts = function() {
 	}
 	// Callback once stock quantity is updated
 	var confirmed = function(res) {
-		console.log(format);
-		console.log(res);
 		console.log(chalk.bold.blue('\nCompleted adding additional item!'));
 		// Reshow menu
 		start();

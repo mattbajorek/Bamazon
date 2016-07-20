@@ -39,7 +39,7 @@ var chooseItem = function(max) {
     type: "input",
     message: "What is the item ID of the product you would like to buy?",
     validate: function(value) {
-      if (value >= 0 && value <= max && value%1 === 0 && value.indexOf(' ') < 0 && value.indexOf('.') < 0) {
+      if (value>=0 && value<=max && value%1 === 0 && value.indexOf(' ')<0 && value.indexOf('.')<0) {
         return true;
       } else {
         return 'Please type a whole number between 1 and ' + max + ' without a period or extra spaces';

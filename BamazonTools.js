@@ -28,8 +28,8 @@ var printData = function(res, col) {
       var length;
       // Check to see if datatype is number, if so turn to string
       if (typeof res[i][col[j]] === 'number') {
-        // If price, add $
-        if (col[j] === 'Price') res[i][col[j]] = accounting.formatMoney(res[i][col[j]]);
+        // If price, overhead, sales, or profit add $ and format properly
+        if (col[j] === 'Price' || col[j] === 'Overhead Costs' || col[j] === 'Product Sales' || col[j] === 'Total Profit') res[i][col[j]] = accounting.formatMoney(res[i][col[j]]);
         length = res[i][col[j]].toString().split('').length;
       } else {
         length = res[i][col[j]].split('').length;
@@ -91,10 +91,10 @@ var printData = function(res, col) {
 };
 
 var validate = function(value) {
-  if (value >= 0 && value%1 === 0 && value.indexOf(' ') < 0 && value.indexOf('.') < 0) {
+  if (value>=0 && value<=65535 && value%1===0 && value.indexOf(' ')<0 && value.indexOf('.')<0) {
     return true;
   } else {
-    return 'Please type a whole number greater than 0 without a period or extra spaces';
+    return 'Please type a whole number between 0 and 65535 without a period or extra spaces';
   }
 }
 
